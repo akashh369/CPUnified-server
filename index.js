@@ -26,7 +26,7 @@ mongoose.connect(process.env.ATLAS).then(() => {
 
 app.use('/contests', Contests)
 
-app.use('/data', codechefData)
+app.use('/codechef', codechefData)
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`)

@@ -1,7 +1,7 @@
 import { CodechefUser } from './codechef-user.model.js'
 import mongoose, { Schema } from 'mongoose'
 
-const codechefContestInfoSchema = new Schema({
+const CodechefContestInfoSchema = new Schema({
     user: { type: Schema.Types.ObjectId, ref: CodechefUser },
     previousContests: [{
         contestRating: {
@@ -18,6 +18,6 @@ const codechefContestInfoSchema = new Schema({
     timestamps: true
 })
 
-export const codechefContestInfo = mongoose.model('codechefContestInfo', codechefContestInfoSchema)
+export const CodechefContestInfo = mongoose.model('CodechefContestInfo', CodechefContestInfoSchema)
 
-// module.exports = codechefContestInfo
+// module.exports = CodechefContestInfo
