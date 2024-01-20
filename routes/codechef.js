@@ -5,9 +5,13 @@ import axios from 'axios'
 const codechefData = express.Router()
 //https://codechefapi.onrender.com/codechef/
 
-async function update(username) {
+async function updateData(username) {
+
 
     const data = await axios.get(`https://codechefapi.onrender.com/codechef/${username}`)
+    if (data.data.success == false) {
+        return data.data
+    }
     let heatArray = data.data.heatArray.map(data => {
         return {
             count: data.count, date: data.date
@@ -58,6 +62,7 @@ async function update(username) {
             maxRating: maxRating
         },
         { upsert: 1 })
+    console.log("done")
 }
 
 async function getUser(username = "akashh_bhandar") {   //can only be called when the user is present in DB
@@ -65,16 +70,17 @@ async function getUser(username = "akashh_bhandar") {   //can only be called whe
     // console.log("username", userDataInDB)
     // const a = userDataInDB.userInfo
     const contesntInfo = await CodechefContestInfo.findOne({ user: userDataInDB._id }).populate('user')
-    console.log("a", contesntInfo)
+    // console.log("a", contesntInfo)
 
     return contesntInfo
 }
 
-codechefData.post('/change-handle-user', async (req, res) => {
+codechefData.post('/refresh-data', async (req, res) => {
     try {
-        const username = req.query.username || "akashh_bhandar"
-        update(username)
-        const data = getUser(username)
+        const username = req.body.username || ""
+        console.log(username)
+        await updateData(username)
+        const data = await getUser(username)
         res.json({ data: data }).status(200)
     }
     catch (err) {
@@ -84,15 +90,21 @@ codechefData.post('/change-handle-user', async (req, res) => {
 
 codechefData.get('/user', async (req, res) => {
     try {
-        const username = req.query.username || "akashh_bhandar"
+        const username = req.query.username || ""
+        console.log(username)
         const userDataInDB = await CodechefUser.findOne({ username: username })
         if (!userDataInDB) {
-            updateData(username)
+            const data = await updateData(username)
+            if (data?.success == false) {
+                res.json({ data: data }).status(404)
+                return;
+            }
         }
-        const data = await getUser()
-        console.log("data=", data)
+        let data = await getUser(username)
+        // data.success = success
         res.json({ data: data }).status(200)
     }
+
     catch (err) {
         res.json(err).status(404)
     }
