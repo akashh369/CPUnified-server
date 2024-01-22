@@ -11,6 +11,7 @@ import Contests from './routes/contests.js'
 // const Contests = require('./routes/contests')
 import codechefData from './routes/codechef.js'
 // const codechefData = require('./routes/codechef')
+import MainRouter from './routes/mainRouter.js'
 
 
 const port = process.env.PORT || 4999
@@ -27,6 +28,8 @@ mongoose.connect(process.env.ATLAS).then(() => {
 app.use('/contests', Contests)
 
 app.use('/codechef', codechefData)
+
+app.use('',MainRouter)
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`)
