@@ -7,4 +7,9 @@ const factSchema = new Schema({
     }
 })
 
+// factSchema.pre('save' ,()=>{
+//     const doc = this
+//     doc.index = 
+// })
+
 export const Fact = mongoose.model('Fact', factSchema)
