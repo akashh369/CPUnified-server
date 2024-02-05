@@ -6,7 +6,6 @@ const MainRouter = express.Router();
 import { Fact } from "../models/fact.models.js";
 import { createTokens } from "../JWT.js";
 
-
 MainRouter.post("/register", async (req, res) => {
   const { username, password, codechefUsername } = req.body;
   bcrypt
@@ -18,7 +17,9 @@ MainRouter.post("/register", async (req, res) => {
       });
     })
     .then(() => {
-      res.json(`${username} registration succesfull .Now please login`).status(200);
+      res
+        .json(`${username} registration succesfull .Now please login`)
+        .status(200);
     })
     .catch((err) => {
       res.json({ error: err | "undefined error" }).status(400);
@@ -27,7 +28,7 @@ MainRouter.post("/register", async (req, res) => {
 
 MainRouter.post("/login", async (req, res) => {
   const { username, password, codechefUsername } = req.body;
-  console.log('start',username,password)
+  console.log("start", username, password);
 
   const user = await User.aggregate([
     {
@@ -44,16 +45,15 @@ MainRouter.post("/login", async (req, res) => {
   const dbPassword = user[0].password;
 
   await bcrypt.compare(password, dbPassword).then((result) => {
-    console.log('result',dbPassword)
+    console.log("result", dbPassword);
     if (!result) {
       return res.json("Authentication failed. Wrong password.").status(200);
     } else {
       // const accessToken = createTokens(user);
-
       // res.cookie("access-token", accessToken, { maxAge: 60*1000 ,httpOnly : true});     //change
     }
   });
-  res.json({message : "login succesfull",status : true}).status(200);
+  return res.json({ message: "login succesfull", loggedIn: true }).status(200);
 });
 
 MainRouter.get("/facts", async (req, res) => {
