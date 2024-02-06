@@ -45,15 +45,14 @@ MainRouter.post("/login", async (req, res) => {
   const dbPassword = user[0].password;
 
   await bcrypt.compare(password, dbPassword).then((result) => {
-    console.log("result", dbPassword);
     if (!result) {
       return res.json("Authentication failed. Wrong password.").status(200);
-    } else {
-      // const accessToken = createTokens(user);
-      // res.cookie("access-token", accessToken, { maxAge: 60*1000 ,httpOnly : true});     //change
     }
+    const accessToken = createTokens(user);
+    return res
+      .json({ message: "login succesfull", token: accessToken })
+      .status(200);
   });
-  return res.json({ message: "login succesfull", loggedIn: true }).status(200);
 });
 
 MainRouter.get("/facts", async (req, res) => {

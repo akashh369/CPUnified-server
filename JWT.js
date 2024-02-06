@@ -5,20 +5,25 @@ export const createTokens = (user) => {
   const accessToken = sign(
     { username: user.username },
     process.env.JWT_SECRET_KEY,
-    { expiresIn : '2h'}       //change
+    { expiresIn: "2h" } //change
   );
-  console.log(accessToken);
+  // console.log(accessToken);
   return accessToken;
 };
 
 export const authMiddleware = (req, res, next) => {
-  if(req.originalUrl.slice(2)=="login")
-  {
-    return next()
+  if (req.originalUrl.slice(2) == "login") {
+    return next();
   }
   const accessToken = req.cookies["access-token"];
 
-  if (!accessToken) return res.json({ error: "session expired please login again",changePathToStart : true }).status(400);
+  if (!accessToken)
+    return res
+      .json({
+        error: "session expired please login again",
+        changePathToStart: true,
+      })
+      .status(401);
 
   try {
     const validTokien = verify(accessToken, process.env.JWT_SECRET_KEY);
@@ -26,7 +31,7 @@ export const authMiddleware = (req, res, next) => {
       req.authenticate = true;
       return next();
     }
-    throw new Error('authorisation failed')
+    return res.json("authorizarion failed").status(401);
     ////???????????????????????????????????????????????????????????????????????????????????
   } catch (err) {
     return res.json({ error: err }).status(400);
