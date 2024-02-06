@@ -37,16 +37,23 @@ MainRouter.post("/login", async (req, res) => {
   ]);
   //Authentication failed. Wrong password.
   if (user.length == 0) {
-    console.log("user", user);
     return res
-      .json({ err: "Authentication failed. User not found." })
-      .status(200);
+      .json({
+        message: "Authentication failed. User not found.",
+        userNotFound: true,
+      })
+      .status(404);
   }
   const dbPassword = user[0].password;
 
   await bcrypt.compare(password, dbPassword).then((result) => {
     if (!result) {
-      return res.json("Authentication failed. Wrong password.").status(200);
+      return res
+        .json({
+          message: "Authentication failed. Wrong password.",
+          wrongPassword: true,
+        })
+        .status(404);
     }
     const accessToken = createTokens(user);
     return res
