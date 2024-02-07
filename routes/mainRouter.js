@@ -28,7 +28,6 @@ MainRouter.post("/register", async (req, res) => {
 
 MainRouter.post("/login", async (req, res) => {
   const { username, password, codechefUsername } = req.body;
-  console.log("start", username, password);
 
   const user = await User.aggregate([
     {
@@ -55,7 +54,7 @@ MainRouter.post("/login", async (req, res) => {
         })
         .status(404);
     }
-    const accessToken = createTokens(user);
+    const accessToken = createTokens(user[0]);
     return res
       .json({ message: "login succesfull", token: accessToken })
       .status(200);

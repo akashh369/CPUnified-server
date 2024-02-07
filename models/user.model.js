@@ -7,8 +7,9 @@ const userSchema = new Schema({
     unique: true,
   },
   password: { type: String },
-  ccRef: { type: Schema.Types.ObjectId, ref: CodechefUser },
-  ccRef2 : { type: Schema.Types.ObjectId, ref: CodechefUser },
+  ccRef1: { type: Schema.Types.ObjectId, ref: CodechefUser },
+  ccRef2: { type: Schema.Types.ObjectId, ref: CodechefUser },
+  allccRef: { type: [Schema.Types.ObjectId], ref: CodechefUser },//all the users ever searched by the user
   // leetcodeRef :...
 });
 

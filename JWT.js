@@ -13,7 +13,7 @@ export const createTokens = (user) => {
 
 //to check wether the token is valid or not
 export const authMiddleware = (req, res, next) => {
-  if (req.originalUrl.slice(2) == "login") {
+  if (req.originalUrl.includes ("login")) {
     return next();
   }
   if (
@@ -21,11 +21,12 @@ export const authMiddleware = (req, res, next) => {
     req.headers.authorization.startsWith("Bearer")
   ) {
     const accessToken = req.headers.authorization.split(" ")[1];
-
+    
     try {
-      const validTokien = verify(accessToken, process.env.JWT_SECRET_KEY);
-      if (validTokien) {
+      const validToken = verify(accessToken, process.env.JWT_SECRET_KEY);
+      if (validToken) {
         req.authenticate = true;
+        req.user=validToken.username
         return next();
       }
       return res.json("authorizarion failed").status(401);
