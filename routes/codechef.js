@@ -43,7 +43,7 @@ async function updateData(username) {
   );
 
   let maxRating, minRating;
-
+  console.log('a')
   const lastFewRatings = data.data.lastFewRatings.map((rating) => {
     let [a, b] = rating.contestRating.split(" ");
     b = parseInt(b.substring(1, b.length - 1));
@@ -60,14 +60,14 @@ async function updateData(username) {
     };
   });
 
-  await CodechefContestInfo.findOneAndUpdate(
+  await CodechefUser.findOneAndUpdate(
     { user: userDetails._id },
     {
       previousContests: lastFewRatings,
       minRating: minRating,
       maxRating: maxRating,
     },
-    { upsert: 1 }
+    { upsert: true }
   );
   console.log("done");
 }
@@ -112,35 +112,33 @@ codechefData.get("/user", async (req, res) => {
   }
 });
 
-codechefData.get("/getUsers",async(req,res)=>{
-    try{
-        const loginUser=req.user
-        console.log('/getUsers')
-        const codechefUsers =await User.aggregate([
-          { $match : {username : loginUser}},
-          {
-            $lookup : {
-              from : 'codechefusers',
-              as : 'user1',
-              localField : 'ccRef1',
-              foreignField : '_id'
-            }
-          },
-          {
-            $lookup : {
-              from : 'codechefusers',
-              as : 'user2',
-              localField : 'ccRef2',
-              foreignField : '_id'
-            }
-          }
-        ])
-        console.log('codechefUsers',codechefUsers,loginUser)
-        res.json({data : codechefUsers[0]})
-    }
-    catch(err){
-        
-    }
+codechefData.get("/getUsers", async (req, res) => {
+  try {
+    const loginUser = req.user
+    const codechefUsers = await User.aggregate([
+      { $match: { username: loginUser } },
+      {
+        $lookup: {
+          from: 'codechefusers',
+          as: 'user1',
+          localField: 'ccRef1',
+          foreignField: '_id'
+        }
+      },
+      {
+        $lookup: {
+          from: 'codechefusers',
+          as: 'user2',
+          localField: 'ccRef2',
+          foreignField: '_id'
+        }
+      }
+    ])
+    res.json({ data: codechefUsers[0] })
+  }
+  catch (err) {
+
+  }
 });
 
 export default codechefData;

@@ -13,6 +13,17 @@ const codechefUserSchema = new Schema({
         stars: String,
     },
     heatMap: [{ count: String, date: Date }],
+    previousContests: [{
+        contestRating: {
+            rating: Number,
+            change: Number
+        },
+        contestName: String,
+        contestDate: Date,
+        globalRank: String,
+    }],
+    minRating: String,
+    maxRating: String
 }, {
     timestamps: true
 })
