@@ -13,7 +13,7 @@ export const createTokens = (user) => {
 
 //to check wether the token is valid or not
 export const authMiddleware = (req, res, next) => {
-  if (req.originalUrl.includes ("login")) {
+  if (req.originalUrl.includes("login")) {
     return next();
   }
   if (
@@ -21,24 +21,24 @@ export const authMiddleware = (req, res, next) => {
     req.headers.authorization.startsWith("Bearer")
   ) {
     const accessToken = req.headers.authorization.split(" ")[1];
-    
+
     try {
       const validToken = verify(accessToken, process.env.JWT_SECRET_KEY);
       if (validToken) {
         req.authenticate = true;
-        req.user=validToken.username
+        req.user = validToken.username
         return next();
       }
       return res.json("authorizarion failed").status(401);
       ////???????????????????????????????????????????????????????????????????????????????????
     } catch (err) {
-      return res.json({ error: err }).status(400);
+      return res.json({ error: err, sessionExpired: true }).status(400);
     }
   } else {
     return res
       .json({
         error: "session expired please login again",
-        changePathToStart: true,
+
       })
       .status(401);
   }

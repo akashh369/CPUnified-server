@@ -43,8 +43,8 @@ async function updateData(username) {
   );
 
   let maxRating, minRating;
-  console.log('a')
-  const lastFewRatings = data.data.lastFewRatings.map((rating) => {
+
+  const lastFewRatings = await data.data.lastFewRatings.map((rating) => {
     let [a, b] = rating.contestRating.split(" ");
     b = parseInt(b.substring(1, b.length - 1));
     a = parseInt(a);
@@ -59,27 +59,29 @@ async function updateData(username) {
       ...rating,
     };
   });
-
-  await CodechefUser.findOneAndUpdate(
-    { user: userDetails._id },
+  const finalData = await CodechefUser.findOneAndUpdate(
+    { _id: userDetails._id },
     {
-      previousContests: lastFewRatings,
-      minRating: minRating,
-      maxRating: maxRating,
+      $set: {
+        previousContests: lastFewRatings,
+        minRating: minRating,
+        maxRating: maxRating,
+      }
     },
-    { upsert: true }
+    { upsert: true, new: 1 }
   );
-  console.log("done");
+
 }
 
 async function getUser(username = "akashh_bhandar") {
   //can only be called when the user is present in DB
-  const userDataInDB = await CodechefUser.findOne({ username: username });
-  const contesntInfo = await CodechefContestInfo.findOne({
-    user: userDataInDB._id,
-  }).populate("user");
+  const userDataInDB = await CodechefUser.findOne({ username: username }).lean();
 
-  return contesntInfo;
+  // const contesntInfo = await CodechefContestInfo.findOne({
+  //   user: userDataInDB._id,
+  // }).populate("user");
+
+  return userDataInDB;
 }
 
 codechefData.post("/refresh-data", async (req, res) => {
@@ -96,7 +98,7 @@ codechefData.post("/refresh-data", async (req, res) => {
 codechefData.get("/user", async (req, res) => {
   try {
     const username = req.query.username || "";
-    const userDataInDB = await CodechefUser.findOne({ username: username });
+    const userDataInDB = await CodechefUser.findOne({ username: username }).lean();
     if (!userDataInDB) {
       const data = await updateData(username);
       if (data?.success == false) {

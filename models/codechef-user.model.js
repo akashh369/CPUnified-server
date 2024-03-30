@@ -21,6 +21,7 @@ const codechefUserSchema = new Schema({
         contestName: String,
         contestDate: Date,
         globalRank: String,
+
     }],
     minRating: String,
     maxRating: String
