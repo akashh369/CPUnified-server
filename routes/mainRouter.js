@@ -18,7 +18,7 @@ MainRouter.post("/register", async (req, res) => {
     })
     .then(() => {
       res
-        .json(`${username} registration succesfull .Now please login`)
+        .json(`${username} registration successful .Now please login`)
         .status(200);
     })
     .catch((err) => {
@@ -33,7 +33,27 @@ MainRouter.post("/login", async (req, res) => {
     {
       $match: { username: username },
     },
+    {
+      $lookup: {
+        from: 'codechefusers',
+        as: 'ccUser1',
+        localField: 'ccRef1',
+        foreignField: '_id'
+      }
+    },
+    {
+      $lookup: {
+        from: 'codechefusers',
+        as: 'ccUser2',
+        localField: 'ccRef2',
+        foreignField: '_id'
+      }
+    }
   ]);
+
+  const { ccUser1, ccUser2 } = user[0];
+  const ccCompareUser1 = ccUser1[0].username;
+  const ccCompareUser2 = ccUser2[0].username;
   //Authentication failed. Wrong password.
   if (user.length == 0) {
     return res
@@ -55,8 +75,9 @@ MainRouter.post("/login", async (req, res) => {
         .status(404);
     }
     const accessToken = createTokens(user[0]);
+
     return res
-      .json({ message: "login succesfull", token: accessToken })
+      .json({ message: "login succesfull", token: accessToken , ccCompareUser1,ccCompareUser2})
       .status(200);
   });
 });

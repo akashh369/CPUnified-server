@@ -98,6 +98,7 @@ codechefData.post("/refresh-data", async (req, res) => {
 codechefData.get("/user", async (req, res) => {
   try {
     const username = req.query.username || "";
+
     const userDataInDB = await CodechefUser.findOne({ username: username }).lean();
     if (!userDataInDB) {
       const data = await updateData(username);
@@ -107,6 +108,17 @@ codechefData.get("/user", async (req, res) => {
       }
     }
     let data = await getUser(username);
+    const ccUserRefNumber = req.query?.ccUserRefNumber;
+    const currentUser = req.user;
+    switch (ccUserRefNumber) {
+      case '1':
+        const updated = await User.findOneAndUpdate({ username: currentUser }, { ccRef1: data._id }, { new: 1 });
+        break;
+      case '2':
+        const update = await User.findOneAndUpdate({ username: currentUser }, { ccRef2: data._id }, { new: 1 });
+        break;
+    }
+
     // data.success = success
     res.json({ data: data }).status(200);
   } catch (err) {
