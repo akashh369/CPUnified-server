@@ -52,8 +52,8 @@ async function updateData(username) {
       maxRating = a;
       minRating = a;
     }
-    maxRating = Math.max(maxRating, a);
-    minRating = Math.min(minRating, a);
+    maxRating = Math.Math.max(maxRating, a);
+    minRating = Math.Math.min(minRating, a);
     rating.contestRating = { rating: a, change: b };
     return {
       ...rating,
@@ -154,6 +154,45 @@ codechefData.get("/getUsers", async (req, res) => {
 
   }
 });
+
+codechefData.post("/cc-contest-compare-data", async (req, res) => {
+  try {
+    const User1Data = await CodechefUser.findOne({ username: req.body.ccUserRef1 }, 'previousContests').lean();
+    const User2Data = await CodechefUser.findOne({ username: req.body.ccUserRef2 }, 'previousContests').lean();
+
+    const CCUser1DataMap = {}, CCUser2DataMap = {};
+    for (const data of User1Data.previousContests) {
+      CCUser1DataMap[data.contestName] = data;
+    }
+    for (const data of User2Data.previousContests) {
+      if (CCUser1DataMap[data.contestName])
+        CCUser2DataMap[data.contestName] = data;
+    }
+
+    const CCUser1Data = [], CCUser2Data = [];
+    let minRating = 10000, maxRating = -1;
+    Object.keys(CCUser2DataMap).forEach(data => {
+      console.log('a');
+      CCUser1Data.push(CCUser1DataMap[data]);
+      CCUser2Data.push(CCUser2DataMap[data]);
+      minRating = (Math.min(minRating, (Math.min(CCUser1DataMap[data].contestRating.rating, CCUser2DataMap[data].contestRating.rating))));
+      maxRating = (Math.max(maxRating, (Math.max(CCUser1DataMap[data].contestRating.rating, CCUser2DataMap[data].contestRating.rating))));
+    })
+    minRating = parseInt(minRating / 100) * 100;
+    maxRating = parseInt(maxRating / 100) * 100;
+    res.json({
+      data: {
+        minRating: minRating,
+        maxRating: maxRating,
+        CCUser1Data: CCUser1Data,
+        CCUser2Data: CCUser2Data
+      }
+    }).status(200);
+  }
+  catch (err) {
+
+  }
+})
 
 export default codechefData;
 
