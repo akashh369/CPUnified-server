@@ -5,7 +5,7 @@ const { sign, verify } = JWT;
 export const createTokens = (user) => {
   const accessToken = sign(
     { username: user.username },
-    process.env.JWT_SECRET_KEY,
+    process.env.JWT_SECRET_KEY, 
     { expiresIn: "2h" } //change
   );
   return accessToken;
@@ -13,6 +13,9 @@ export const createTokens = (user) => {
 
 //to check wether the token is valid or not
 export const authMiddleware = (req, res, next) => {
+
+  console.log('\n \x1b[36m%s\x1b[0m', req.originalUrl);
+  
   if (req.originalUrl.includes("login")) {
     return next();
   }

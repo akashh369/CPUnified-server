@@ -32,11 +32,12 @@ mongoose
     "error=", err;
   });
 
-app.use("/contests", authMiddleware,Contests);
+app.use("/contests", authMiddleware, Contests);
 
-app.use("/codechef",authMiddleware, codechefData);
- 
-app.use("", authMiddleware,MainRouter);
+app.use("/codechef", authMiddleware, codechefData);
+
+
+app.use("", authMiddleware, MainRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

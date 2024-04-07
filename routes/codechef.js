@@ -172,14 +172,13 @@ codechefData.post("/cc-contest-compare-data", async (req, res) => {
     const CCUser1Data = [], CCUser2Data = [];
     let minRating = 10000, maxRating = -1;
     Object.keys(CCUser2DataMap).forEach(data => {
-      console.log('a');
       CCUser1Data.push(CCUser1DataMap[data]);
       CCUser2Data.push(CCUser2DataMap[data]);
       minRating = (Math.min(minRating, (Math.min(CCUser1DataMap[data].contestRating.rating, CCUser2DataMap[data].contestRating.rating))));
       maxRating = (Math.max(maxRating, (Math.max(CCUser1DataMap[data].contestRating.rating, CCUser2DataMap[data].contestRating.rating))));
     })
-    minRating = parseInt(minRating / 100) * 100;
-    maxRating = parseInt(maxRating / 100) * 100;
+    minRating = parseInt(minRating / 50) * 50 - 50;
+    maxRating = parseInt(maxRating / 50) * 50 + 50;
     res.json({
       data: {
         minRating: minRating,
