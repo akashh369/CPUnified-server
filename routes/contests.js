@@ -1,6 +1,7 @@
 import express from 'express'
 const Contests = express.Router();
 import axios from 'axios';
+import { CodeforcesContestData } from '../models/codeforces-contest-data.model.js';
 
 const sliceConstant = -5;
 
@@ -45,8 +46,21 @@ const modifyCodeChefData = (data) => {
 }
 
 const modifyCodeForcesData = (data) => {
-    //this will require a cron-job
-    console.log(data);
+    let past = [], future = []
+    data.map(cData => {
+        switch (cData.phase) {
+            case "BEFORE":
+                future.push(cData);
+            case "FINISHED":
+                past.push(cData);
+        }
+    })
+
+    return {
+        past: past,
+        present: [],
+        future: future
+    }
 }
 
 const modifyLeetCodeData = (data) => {
@@ -62,10 +76,14 @@ Contests.get('/codechef', async (req, res) => {
 })
 
 Contests.get('/codeforces', async (req, res) => {
-    const data = await axios.get('https://codeforces.com/api/contest.list?gym=true');
-    const slicedData = data.data.result.slice(-100);
-    const contestData = modifyCodeForcesData(slicedData);
-    res.json({ data: slicedData });
+    try {
+        const data = await CodeforcesContestData.find({}).lean();
+        const contestData = modifyCodeForcesData(data);
+        res.json({ data: contestData });
+    }
+    catch (err) {
+        console.warn('error', err);
+    }
 });
 
 Contests.get('/leetcode', async (req, res) => {
