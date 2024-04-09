@@ -62,6 +62,7 @@ cron.schedule('0 1 * * *', async () => {
         }
         finally {
           await CodeforcesContestData.insertMany(contestData, { ordered: false }, { new: true });
+          console.log('codeforcesContestData updated');
         }
 
       }

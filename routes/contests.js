@@ -2,6 +2,7 @@ import express from 'express'
 const Contests = express.Router();
 import axios from 'axios';
 import { CodeforcesContestData } from '../models/codeforces-contest-data.model.js';
+import moment from 'moment';
 
 const sliceConstant = -5;
 
@@ -64,7 +65,43 @@ const modifyCodeForcesData = (data) => {
 }
 
 const modifyLeetCodeData = (data) => {
-    console.log(data);
+    const banner = data[0].state.data.contestRootBanners[0].banner;
+    let past = data[1].state.data.pastContests.data;
+    let future = data[4].state.data.topTwoContests;
+    let present = [];
+
+    past = past.map(contestData => {
+        const startTime = new Date(contestData.startTime * 1000);
+        const endTime = new Date((contestData.startTime + 5400) * 1000);
+        return {
+            platform: 'LEETCODE',
+            name: contestData.title,
+            url: `https://leetcode.com/contest/${contestData.titleSlug}`,
+            start: moment(startTime).format('DD MMM YYYY HH:mm:ss'),
+            end: moment(endTime).format('DD MMM YYYY HH:mm:ss'),
+            banner: banner
+        }
+    });
+
+    future = future.map(contestData => {
+        const startTime = new Date(contestData.startTime * 1000);
+        const endTime = new Date((contestData.startTime + contestData.endTime) * 1000);
+        return {
+            platform: 'LEETCODE',
+            name: contestData.title,
+            url: `https://leetcode.com/contest/${contestData.titleSlug}`,
+            start: moment(startTime).format('DD MMM YYYY HH:mm:ss'),
+            end: moment(endTime).format('DD MMM YYYY HH:mm:ss'),
+            banner: banner
+        }
+    });
+
+    return {
+        past: past,
+        future: future,
+        present: present
+    }
+
 }
 
 Contests.get('/codechef', async (req, res) => {
@@ -88,14 +125,14 @@ Contests.get('/codeforces', async (req, res) => {
 
 Contests.get('/leetcode', async (req, res) => {
     try {
-        const data = await axios({
-            method: 'get',
-            url: 'https://cors-anywhere.herokuapp.com/https://example.com/',
-            headers: { 'Origin': 'https://leetcode.com/_next/data/xVVXH3Clo8h3_-5OShKCy/contest.json' }
-        })
-        const url = "https://proxy.cors.sh/https://leetcode.com/_next/data/xVVXH3Clo8h3_-5OShKCy/contest.json"
-        // const data = await axios.post('https://leetcode.com/_next/data/xVVXH3Clo8h3_-5OShKCy/contest.json')
-        const contestData = modifyLeetCodeData(data);
+        const data = await axios.get('https://leetcode.com/_next/data/xVVXH3Clo8h3_-5OShKCy/contest.json', {
+            headers: {
+                'Host': 'leetcode.com',
+                'User-Agent': 'Mozilla/5.0 (X11; Linux i686; rv:110.0) Gecko/20100101 Firefox/110.0.',
+                'Cookie': '__cf_bm=nPyZaoaoZDOGHnKIG6sOfvBmYvz6IW0chPXogQEEzS8-1712599533-1.0.1.1-gGpbtUTACvJ4U2_jucId.AFsJZSg9eE5bHdZbnC41bOBbUOgSG9zY32BGsNqeEfEbtaH5mLDa_m9RHGeWjjA.w'
+            }
+        });
+        const contestData = modifyLeetCodeData(data.data.pageProps.dehydratedState.queries);
         res.json({ data: contestData });
     }
     catch (err) {

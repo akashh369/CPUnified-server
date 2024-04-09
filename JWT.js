@@ -5,7 +5,7 @@ const { sign, verify } = JWT;
 export const createTokens = (user) => {
   const accessToken = sign(
     { username: user.username },
-    process.env.JWT_SECRET_KEY, 
+    process.env.JWT_SECRET_KEY,
     { expiresIn: "2h" } //change
   );
   return accessToken;
@@ -15,7 +15,7 @@ export const createTokens = (user) => {
 export const authMiddleware = (req, res, next) => {
 
   console.log('\n \x1b[36m%s\x1b[0m', req.originalUrl);
-  
+
   if (req.originalUrl.includes("login")) {
     return next();
   }
@@ -32,7 +32,7 @@ export const authMiddleware = (req, res, next) => {
         req.user = validToken.username
         return next();
       }
-      return res.json("authorizarion failed").status(401);
+      return res.json("authorization failed").status(401);
       ////???????????????????????????????????????????????????????????????????????????????????
     } catch (err) {
       return res.json({ error: err, sessionExpired: true }).status(400);
