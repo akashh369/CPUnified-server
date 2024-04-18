@@ -65,34 +65,40 @@ const modifyCodeForcesData = (data) => {
 }
 
 const modifyLeetCodeData = (data) => {
-    const banner = data[0].state.data.contestRootBanners[0].banner;
-    let past = data[1].state.data.pastContests.data;
-    let future = data[4].state.data.topTwoContests;
-    let present = [];
+    let future = data['topTwoContests'];
+    let present = data['ongoingVirtualContest'];
+    present = present ?? [];
+    let futurePresentContestSet = new Set(future.map(data => data.titleSlug));
+    present.map(data => futurePresentContestSet.add(data.titleSlug));
+    let past = [];
+    for (let i = 0; i < 12; i++) {
+        if (!futurePresentContestSet.has(data['allContests'][i].titleSlug))
+            past.push(data['allContests'][i]);
+    }
 
     past = past.map(contestData => {
         const startTime = new Date(contestData.startTime * 1000);
-        const endTime = new Date((contestData.startTime + 5400) * 1000);
+        const endTime = new Date((contestData.startTime + contestData.duration ?? 5400) * 1000);
         return {
             platform: 'LEETCODE',
             name: contestData.title,
             url: `https://leetcode.com/contest/${contestData.titleSlug}`,
             start: moment(startTime).format('DD MMM YYYY HH:mm:ss'),
             end: moment(endTime).format('DD MMM YYYY HH:mm:ss'),
-            banner: banner
+            banner: contestData.cardImg
         }
     });
 
     future = future.map(contestData => {
         const startTime = new Date(contestData.startTime * 1000);
-        const endTime = new Date((contestData.startTime + contestData.endTime) * 1000);
+        const endTime = new Date((contestData.startTime + contestData.duration ?? 5400) * 1000);
         return {
             platform: 'LEETCODE',
             name: contestData.title,
             url: `https://leetcode.com/contest/${contestData.titleSlug}`,
             start: moment(startTime).format('DD MMM YYYY HH:mm:ss'),
             end: moment(endTime).format('DD MMM YYYY HH:mm:ss'),
-            banner: banner
+            banner: contestData.cardImg
         }
     });
 
@@ -105,11 +111,14 @@ const modifyLeetCodeData = (data) => {
 }
 
 Contests.get('/codechef', async (req, res) => {
-
-    const data = await axios.get('https://www.codechef.com/api/list/contests/all?sort_by=START&sorting_order=asc&offset=0&mode=premium')
-    const contestData = modifyCodeChefData(data.data);
-    res.json({ data: contestData });
-
+    try {
+        const data = await axios.get('https://www.codechef.com/api/list/contests/all?sort_by=START&sorting_order=asc&offset=0&mode=premium')
+        const contestData = modifyCodeChefData(data.data);
+        res.json({ data: contestData });
+    }
+    catch (err) {
+        console.log('err=>', err);
+    }
 })
 
 Contests.get('/codeforces', async (req, res) => {
@@ -125,14 +134,41 @@ Contests.get('/codeforces', async (req, res) => {
 
 Contests.get('/leetcode', async (req, res) => {
     try {
-        const data = await axios.get('https://leetcode.com/_next/data/xVVXH3Clo8h3_-5OShKCy/contest.json', {
-            headers: {
-                'Host': 'leetcode.com',
-                'User-Agent': 'Mozilla/5.0 (X11; Linux i686; rv:110.0) Gecko/20100101 Firefox/110.0.',
-                'Cookie': '__cf_bm=nPyZaoaoZDOGHnKIG6sOfvBmYvz6IW0chPXogQEEzS8-1712599533-1.0.1.1-gGpbtUTACvJ4U2_jucId.AFsJZSg9eE5bHdZbnC41bOBbUOgSG9zY32BGsNqeEfEbtaH5mLDa_m9RHGeWjjA.w'
+        const endPoint = `https://leetcode.com/graphql/`;
+        const query = ` {
+            topTwoContests {
+              title
+              titleSlug
+              startTime
+              cardImg
+              duration
             }
-        });
-        const contestData = modifyLeetCodeData(data.data.pageProps.dehydratedState.queries);
+            ongoingVirtualContest {
+              title
+              titleSlug
+              startTime
+              cardImg
+              duration
+            }
+            allContests{
+              title
+              titleSlug
+              startTime
+              cardImg
+              duration
+            }
+          }`;
+        const graphqlQuery = {
+            operationName: "Contests",
+            query: `query Contests ${query}`,
+            variables: {}
+        }
+        const data = await axios({
+            url: endPoint,
+            method: 'get',
+            data: graphqlQuery
+        })
+        const contestData = modifyLeetCodeData(data.data.data);
         res.json({ data: contestData });
     }
     catch (err) {
