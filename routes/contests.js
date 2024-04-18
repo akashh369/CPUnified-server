@@ -71,7 +71,7 @@ const modifyLeetCodeData = (data) => {
     let futurePresentContestSet = new Set(future.map(data => data.titleSlug));
     present.map(data => futurePresentContestSet.add(data.titleSlug));
     let past = [];
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 15; i++) {
         if (!futurePresentContestSet.has(data['allContests'][i].titleSlug))
             past.push(data['allContests'][i]);
     }
