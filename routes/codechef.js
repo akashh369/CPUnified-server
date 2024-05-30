@@ -84,17 +84,6 @@ async function getUser(username = "akashh_bhandar") {
   return userDataInDB;
 }
 
-codechefData.post("/refresh-data", async (req, res) => {
-  try {
-    const username = req.body.username || "";
-    await updateData(username);
-    const data = await getUser(username);
-    res.json({ data: data }).status(200);
-  } catch (err) {
-    res.json(err).status(404);
-  }
-});
-
 codechefData.get("/user", async (req, res) => {
   try {
     const username = req.query.username || "";
@@ -152,6 +141,29 @@ codechefData.get("/getUsers", async (req, res) => {
   }
   catch (err) {
 
+  }
+});
+
+codechefData.get('/get-codechef-usernames', async (req, res) => {
+  try {
+    let usernames = [];
+    if (req.query.searchValue != '')
+      usernames = await CodechefUser.find({ username: { '$regex': req.query.searchValue, '$options': 'i' }, username: { $ne: '' } }, { username: 1, _id: 0 }).limit(5);
+    res.json({ data: usernames.map(name => name?.username) }).status(200);
+  }
+  catch (err) {
+    res.json(err).status(404);
+  }
+});
+
+codechefData.post("/refresh-data", async (req, res) => {
+  try {
+    const username = req.body.username || "";
+    await updateData(username);
+    const data = await getUser(username);
+    res.json({ data: data }).status(200);
+  } catch (err) {
+    res.json(err).status(404);
   }
 });
 
