@@ -40,8 +40,8 @@ cron.schedule('0 1 * * *', async () => {
           }
           let startTime = new Date(data.startTimeSeconds * 1000);
           let endTime = new Date((data.startTimeSeconds + data.durationSeconds) * 1000);
-          startTime = moment(startTime).format('DD MMM YYYY HH:mm:ss');
-          endTime = moment(endTime).format('DD MMM YYYY HH:mm:ss');
+          startTime = moment(startTime).format('DD MMM YYYY HH:mm');
+          endTime = moment(endTime).format('DD MMM YYYY HH:mm');
 
           contestData.push({
             platform: "CODEFORCES",

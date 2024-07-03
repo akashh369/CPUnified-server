@@ -1,6 +1,7 @@
 import * as express from "express";
 import { User } from "../models/user.model.js";
 import * as bcrypt from "bcrypt";
+import { Types } from "mongoose";
 const MainRouter = express.Router();
 
 import { Fact } from "../models/fact.models.js";
@@ -11,9 +12,11 @@ MainRouter.post("/register", async (req, res) => {
   bcrypt
     .hash(password, 10)
     .then(async (hashedPW) => {
-      await User.create({
+      const abc = await User.create({
         username: username,
         password: hashedPW,
+        ccRef1: new Types.ObjectId('6607acc8451fa01cc0400aa1'),
+        ccRef2: new Types.ObjectId('6607acc8451fa01cc0400aa1')
       });
     })
     .then(() => {
@@ -22,6 +25,9 @@ MainRouter.post("/register", async (req, res) => {
         .status(200);
     })
     .catch((err) => {
+      if (err?.code == 1100) {
+        res.json(`user with username ${username} already present`);
+      }
       res.json({ error: err | "undefined error" }).status(400);
     });
 });
@@ -51,6 +57,11 @@ MainRouter.post("/login", async (req, res) => {
     }
   ]);
 
+  if (!user.length)
+    return res
+      .json({ message: "user not found" })
+      .status(401);
+
   const { ccUser1, ccUser2 } = user[0];
   const ccCompareUser1 = ccUser1[0].username;
   const ccCompareUser2 = ccUser2[0].username;
@@ -77,7 +88,7 @@ MainRouter.post("/login", async (req, res) => {
     const accessToken = createTokens(user[0]);
 
     return res
-      .json({ message: "login succesfull", token: accessToken , ccCompareUser1,ccCompareUser2})
+      .json({ message: "login succesfull", token: accessToken, ccCompareUser1, ccCompareUser2 })
       .status(200);
   });
 });

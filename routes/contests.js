@@ -13,8 +13,8 @@ const modifyCodeChefData = (data) => {
             platform: "CODECHEF",
             name: data.contest_name,
             url: 'https://www.codechef.com/' + data.contest_code,
-            start: data.contest_start_date,
-            end: data.contest_end_date,
+            start: data.contest_start_date.slice(0, -3),
+            end: data.contest_end_date.slice(0, -3),
             banner: `https://cdn.codechef.com/download/small-banner/${data.contest_code}/${data.image}.png`
         }
     });
@@ -24,8 +24,8 @@ const modifyCodeChefData = (data) => {
             platform: "CODECHEF",
             name: data.contest_name,
             url: 'https://www.codechef.com/' + data.contest_code,
-            start: data.contest_start_date,
-            end: data.contest_end_date,
+            start: data.contest_start_date.slice(0, -3),
+            end: data.contest_end_date.slice(0, -3),
             banner: `https://cdn.codechef.com/download/small-banner/${data.contest_code}/${data.image}.png`
         }
     });
@@ -34,8 +34,8 @@ const modifyCodeChefData = (data) => {
             platform: "CODECHEF",
             name: data.contest_name,
             url: 'https://www.codechef.com/' + data.contest_code,
-            start: data.contest_start_date,
-            end: data.contest_end_date,
+            start: data.contest_start_date.slice(0, -3),
+            end: data.contest_end_date.slice(0, -3),
             banner: `https://cdn.codechef.com/download/small-banner/${data.contest_code}/${data.image}.png`
         }
     })
@@ -83,8 +83,8 @@ const modifyLeetCodeData = (data) => {
             platform: 'LEETCODE',
             name: contestData.title,
             url: `https://leetcode.com/contest/${contestData.titleSlug}`,
-            start: moment(startTime).format('DD MMM YYYY HH:mm:ss'),
-            end: moment(endTime).format('DD MMM YYYY HH:mm:ss'),
+            start: moment(startTime).format('DD MMM YYYY HH:mm'),
+            end: moment(endTime).format('DD MMM YYYY HH:mm'),
             banner: contestData.cardImg
         }
     });
@@ -96,8 +96,8 @@ const modifyLeetCodeData = (data) => {
             platform: 'LEETCODE',
             name: contestData.title,
             url: `https://leetcode.com/contest/${contestData.titleSlug}`,
-            start: moment(startTime).format('DD MMM YYYY HH:mm:ss'),
-            end: moment(endTime).format('DD MMM YYYY HH:mm:ss'),
+            start: moment(startTime).format('DD MMM YYYY HH:mm'),
+            end: moment(endTime).format('DD MMM YYYY HH:mm'),
             banner: contestData.cardImg
         }
     });
@@ -109,6 +109,45 @@ const modifyLeetCodeData = (data) => {
     }
 
 }
+
+const getLeetCodeContestData = () => {
+    const endPoint = `https://leetcode.com/graphql/`;
+    const query = ` {
+            topTwoContests {
+              title
+              titleSlug
+              startTime
+              cardImg
+              duration
+            }
+            ongoingVirtualContest {
+              title
+              titleSlug
+              startTime
+              cardImg
+              duration
+            }
+            allContests{
+              title
+              titleSlug
+              startTime
+              cardImg
+              duration
+            }
+          }`;
+    const graphqlQuery = {
+        operationName: "Contests",
+        query: `query Contests ${query}`,
+        variables: {}
+    };
+    const data = axios({
+        url: endPoint,
+        method: 'get',
+        data: graphqlQuery
+    });
+    return data;
+}
+
 
 Contests.get('/codechef', async (req, res) => {
     try {
@@ -134,41 +173,8 @@ Contests.get('/codeforces', async (req, res) => {
 
 Contests.get('/leetcode', async (req, res) => {
     try {
-        const endPoint = `https://leetcode.com/graphql/`;
-        const query = ` {
-            topTwoContests {
-              title
-              titleSlug
-              startTime
-              cardImg
-              duration
-            }
-            ongoingVirtualContest {
-              title
-              titleSlug
-              startTime
-              cardImg
-              duration
-            }
-            allContests{
-              title
-              titleSlug
-              startTime
-              cardImg
-              duration
-            }
-          }`;
-        const graphqlQuery = {
-            operationName: "Contests",
-            query: `query Contests ${query}`,
-            variables: {}
-        }
-        const data = await axios({
-            url: endPoint,
-            method: 'get',
-            data: graphqlQuery
-        })
-        const contestData = modifyLeetCodeData(data.data.data);
+        const [leetCodeContestData] = await Promise.all([getLeetCodeContestData()]);
+        const contestData = modifyLeetCodeData(leetCodeContestData.data.data);
         res.json({ data: contestData });
     }
     catch (err) {
@@ -176,4 +182,24 @@ Contests.get('/leetcode', async (req, res) => {
     }
 })
 
+
+Contests.get('/all', async (req, res) => {
+    let [codechefData, codeForcesData, leetcodeData] = await Promise.all(
+        [
+            axios.get('https://www.codechef.com/api/list/contests/all?sort_by=START&sorting_order=asc&offset=0&mode=premium'),
+            CodeforcesContestData.find({}).lean(),
+            getLeetCodeContestData()
+        ]
+    )
+    codechefData = modifyCodeChefData(codechefData.data);
+    codeForcesData = modifyCodeForcesData(codeForcesData);
+    leetcodeData = modifyLeetCodeData(leetcodeData.data.data);
+
+    let allContests = {
+        past: ([...codechefData.past, ...codeForcesData.past, ...leetcodeData.past]).sort((a, b) => a.start < b.start),
+        present: ([...codechefData.present, ...codeForcesData.present, ...leetcodeData.present]).sort((a, b) => a.start < b.start),
+        future: ([...codechefData.future, ...codeForcesData.future, ...leetcodeData.future]).sort((a, b) => a.start < b.start)
+    }
+    res.json({ data: allContests })
+})
 export default Contests 

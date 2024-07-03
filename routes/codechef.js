@@ -147,9 +147,17 @@ codechefData.get("/getUsers", async (req, res) => {
 codechefData.get('/get-codechef-usernames', async (req, res) => {
   try {
     let usernames = [];
-    if (req.query.searchValue != '')
-      usernames = await CodechefUser.find({ username: { '$regex': req.query.searchValue, '$options': 'i' }, username: { $ne: '' } }, { username: 1, _id: 0 }).limit(5);
-    res.json({ data: usernames.map(name => name?.username) }).status(200);
+    if (req.query.searchValue != '') {
+      usernames = await CodechefUser.distinct('username',
+        {
+          username:
+          {
+            '$regex': req.query.searchValue,
+            '$options': 'i'
+          }
+        }, { username: 1, _id: 0 });
+    }
+    res.json({ data: usernames.slice(0, 10) }).status(200);
   }
   catch (err) {
     res.json(err).status(404);

@@ -16,7 +16,7 @@ export const authMiddleware = (req, res, next) => {
 
   console.log('\n \x1b[36m%s\x1b[0m', req.originalUrl);
 
-  if (req.originalUrl.includes("login")) {
+  if (req.originalUrl.includes("login") || req.originalUrl.includes("register")) {
     return next();
   }
   if (
