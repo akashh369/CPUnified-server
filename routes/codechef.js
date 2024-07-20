@@ -9,6 +9,7 @@ const codechefData = express.Router();
 async function updateData(username) {
   const data = await axios.get(
     `https://codechefapi.onrender.com/codechef/${username}`
+    // `http://localhost:4000/codechef/${username}`
   );
   if (data.data.success == false) {
     return data.data;
@@ -32,7 +33,7 @@ async function updateData(username) {
       stars: data.data.otherCommon.stars,
     },
     heatMap: heatArray,
-    qusetionsSolved: data.data.qusetionsSolved,
+    questionsSolved: data.data.questionsSolved,
     numberOfContests: data.data.numberOfContests,
   };
 
@@ -52,8 +53,8 @@ async function updateData(username) {
       maxRating = a;
       minRating = a;
     }
-    maxRating = Math.Math.max(maxRating, a);
-    minRating = Math.Math.min(minRating, a);
+    maxRating = Math.max(maxRating, a);
+    minRating = Math.min(minRating, a);
     rating.contestRating = { rating: a, change: b };
     return {
       ...rating,
